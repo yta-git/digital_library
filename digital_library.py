@@ -10,7 +10,7 @@ def conv(m, t):
         sum = np.array([.0, .0, .0])
         n = 0
         for dx, dy in product(range(-1, 2), range(-1, 2)):
-            if 0 < x + dx < Y and 0 < y + dy < Y:
+            if 0 < x + dx < X and 0 < y + dy < Y:
                 sum += m[y + dy][x + dx]
                 n += 1
         tmp_m[y][x] = sum / n
