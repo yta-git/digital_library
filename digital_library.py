@@ -3,45 +3,35 @@ from itertools import product
 from PIL import Image
 
 def conv(mat, window, terget):
-    mat = mat.copy()
-    
-    mat = np.concatenate(([mat[0]] * window, mat), axis=0)
-    mat = np.concatenate((mat, [mat[-1]] * window, mat), axis=0)
-    mat = np.concatenate((np.array([mat[0]] * window).T, mat), axis=1)
-    
-
-    tmp_m = np.zeros_like(mat, np.float)
-
-    
+    retmat = exmat = mat.copy()
     X, Y = mat.shape[:-1]
+    print(f'using {1 + 2 * window} * {1 + 2 * window} filter')
+
+    exmat = np.concatenate(([exmat[0]] * window, exmat), axis=0)
+    exmat = np.concatenate((exmat, [exmat[-1]] * window), axis=0)
+    exmat = np.concatenate((np.array([exmat[:, 0]]).transpose(1,0,2), exmat), axis=1)
+    exmat = np.concatenate((exmat, np.array([exmat[:, -1]]).transpose(1,0,2)), axis=1)
 
     filter = np.ones((3, 3, 3), np.float) / 9
+    tmp_m = np.zeros_like(mat, np.float)
 
-    
-
-
-
-    for x, y in product(range(X), range(Y)):
-        u = max(0, x - window)
-        d = min(X, x + window + 1)
-        l = max(0, y - window)
-        r = min(Y, y +  window + 1)
-
-        tmp_m = sum(filter[:, :] * mat[u:d, l:r, :])
+    for x, y in product(range(window, X), range(window, Y)):
+        u, d, l, r = x - window, x + window + 1, y - window, y +  window + 1
+        tmp_m[x, y] = np.sum(filter[:, :] * exmat[u:d, l:r])
 
     if 'all' in terget:
         return tmp_m
 
     if 'Y' in terget:
-        mat[:, :, 0] = tmp_m[:, :, 0]
+        retmat[:, :, 0] = tmp_m[:, :, 0]
     
     if 'Cb' in terget:
-        mat[:, :, 1] = tmp_m[:, :, 1]
+        retmat[:, :, 1] = tmp_m[:, :, 1]
     
     if 'Cr' in terget:
-        mat[:, :, 2] = tmp_m[:, :, 2]
+        retmat[:, :, 2] = tmp_m[:, :, 2]
 
-    return mat
+    return retmat
 
 
 def RGBtoYCC(RGB):
