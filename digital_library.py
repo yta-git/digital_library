@@ -3,104 +3,57 @@ from itertools import product
 from PIL import Image
 
 class filter:
-    def __init__(self, window, sigma=1.3): 
-        fsize = 1 + 2 * window
+    def __init__(self, fsize, sigma=1.3): 
+        if not fsize % 2:
+            raise ValueError(f'fsize(={fsize}) should be odd value')
+
         print(f'using {fsize} * {fsize} filter')
         self.moving_average_filter = np.ones((fsize, fsize, 3), np.float) / fsize ** 2
 
-        self.high_pass_filter = np.zeros((fsize, fsize), np.float)
+        self.high_pass_filter = np.zeros((fsize, fsize, 3), np.float)
         self.high_pass_filter[:, 0] = -1
         self.high_pass_filter[:, -1] = 1
 
-        self.laplacian = np.zeros((fsize, fsize), np.float)
-        self.laplacian[fsize // 2, :] = 1/4
-        self.laplacian[:, fsize // 2] = 1/4
-        self.laplacian[fsize // 2, fsize // 2] = -1
+        self.laplacian_filter = np.zeros((fsize, fsize,3), np.float)
+        self.laplacian_filter[fsize // 2, :] = 1/4
+        self.laplacian_filter[:, fsize // 2] = 1/4
+        self.laplacian_filter[fsize // 2, fsize // 2] = -1
 
-        self.gaussian = np.zeros((fsize, fsize), np.float)
+        self.gaussian_filter = np.zeros((fsize, fsize, 3), np.float)
         for x, y in product(range(fsize), range(fsize)):
-            self.gaussian[y, x] = 1/(2*np.pi)**0.5 * np.exp(x**2 + y**2 / 2 / sigma**2)
-class filter2D:
-    def __init__(self, mat):
-        self.mat = mat
-        self.X, self.Y = mat.shape[-1]
+            self.gaussian_filter[y, x] = 1/2/np.pi/sigma**2 * np.exp(-(((x-fsize//2)**2 + (y-fsize//2)**2) / 2 / sigma**2))
 
-    def extend_mat(self, window):
-        exmat = self.mat.copy()
-        exmat = np.concatenate(([exmat[0]] * window, exmat), axis=0)
-        exmat = np.concatenate((exmat, [exmat[-1]] * window), axis=0)
-        exmat = np.concatenate((np.array([exmat[:, 0]] * window).transpose(1, 0, 2), exmat), axis=1)
-        exmat = np.concatenate((exmat, np.array([exmat[:, -1]] * window).transpose(1, 0, 2)), axis=1)
-        return exmat
+def extend(mat, grid):
+    exmat = mat.copy()
+    exmat = np.concatenate(([exmat[0]] * grid, exmat), axis=0)
+    exmat = np.concatenate((exmat, [exmat[-1]] * grid), axis=0)
+    exmat = np.concatenate((np.array([exmat[:, 0]] * grid).transpose(1, 0, 2), exmat), axis=1)
+    exmat = np.concatenate((exmat, np.array([exmat[:, -1]] * grid).transpose(1, 0, 2)), axis=1)
+    return exmat
 
-    def conv(self, filter, target):
-        window = (filter.shape[0] - 1) / 2
-        tmpm = np.zeros_like(self.mat, np.float)
-        for x, y in product(range(window, self.X + window), range(window, self.Y + window)):
-            u, d, l, r = y - window, y + window + 1, x - window, x + window + 1
-            tmpm[y - window, x - window] = sum(sum(filter * self.extend_mat(window)[u:d, l:r]))
+def conv(mat, filter):
+    X, Y = mat.shape[:-1]
+    grid = (filter.shape[0] - 1) // 2
+    exmat = extend(mat, grid)
 
-        return self.targeted(tmpm, target)
-    
-    def median(self, window, target):
-        tmpm = np.zeros_like(self.mat, np.float)
-        for x, y in product(range(window, self.X + window), range(window, self.Y + window)):
-            u, d, l, r = y - window, y + window + 1, x - window, x + window + 1
-            tmpm[y - window, x - window] = np.median(self.extend_mat(window)[u:d, l:r])
+    retm = np.zeros_like(mat, np.float)
+    for x, y in product(range(grid, X + grid), range(grid, Y + grid)):
+        u, d, l, r = y - grid, y + grid + 1, x - grid, x + grid + 1
+        retm[y - grid, x - grid] = sum(sum(filter * exmat[u:d, l:r]))
 
-        return self.targeted(tmpm, target)
+    return retm
 
-    def targeted(self, retm, target):
-        retmat = self.mat.copy()
-        if 'all' in target or target is None:
-            return retm
+def median(mat, fsize):
+    X, Y = mat.shape[:-1]
+    grid = (fsize - 1) // 2
+    exmat = extend(mat, grid)
 
-        if 'Y' in target:
-            retmat[:, :, 0] = retm[:, :, 0]
-        if 'Cb' in target:
-            retmat[:, :, 1] = retm[:, :, 1]
-        if 'Cr' in target:
-            retmat[:, :, 2] = retm[:, :, 2]
+    retm = np.zeros_like(mat, np.float)
+    for x, y in product(range(grid, X + grid), range(grid, Y + grid)):
+        u, d, l, r = y - grid, y + grid + 1, x - grid, x + grid + 1
+        retm[y - grid, x - grid] = np.median(np.median(exmat[u:d, l:r], axis=0), axis=0)
 
-        return retmat
-
-    
-
-# def conv(mat, mode, window, terget):
-#     retmat = mat.copy()
-#     exmat = mat.copy()
-#     X, Y = mat.shape[:-1]
-#     fsize = 1 + 2 * window
-#     print(f'using {fsize} * {fsize} filter')
-
-#     exmat = np.concatenate(([exmat[0]] * window, exmat), axis=0)
-#     exmat = np.concatenate((exmat, [exmat[-1]] * window), axis=0)
-#     exmat = np.concatenate((np.array([exmat[:, 0]] * window).transpose(1, 0, 2), exmat), axis=1)
-#     exmat = np.concatenate((exmat, np.array([exmat[:, -1]] * window).transpose(1, 0, 2)), axis=1)
-
-#     filter = np.ones((fsize, fsize, 3), np.float) / fsize ** 2
-#     tmp_m = np.zeros_like(mat, np.float)
-    
-#     for x, y in product(range(window, X + window), range(window, Y + window)):
-#         u, d, l, r = y - window, y + window + 1, x - window, x + window + 1
-#         tmp_m[y - window, x - window] = sum(sum(filter * exmat[u:d, l:r]))
-
-#     print(tmp_m)
-
-#     if 'all' in terget:
-#         return tmp_m
-
-#     if 'Y' in terget:
-#         retmat[:, :, 0] = tmp_m[:, :, 0]
-    
-#     if 'Cb' in terget:
-#         retmat[:, :, 1] = tmp_m[:, :, 1]
-    
-#     if 'Cr' in terget:
-#         retmat[:, :, 2] = tmp_m[:, :, 2]
-
-#     return retmat
-
+    return retm
 
 def RGBtoYCC(RGB):
     YCC = np.zeros_like(RGB, np.float)
