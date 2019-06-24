@@ -1,8 +1,32 @@
 import numpy as np
 from itertools import product
 from PIL import Image
+class filter:
+    def __init__(self, fsize): 
+        self.moving_average_filter = np.ones((fsize, fsize, 3), np.float) / fsize ** 2
+        self.ones_filter = np.ones((fsize, fsize, 3), np.float)
+        self.high_pass_filter = np.zeros((fsize, fsize), np.float)
+        self.high_pass_filter[:, 0] = -1
+        self.high_pass_filter[:, -1] = 1
 
-def conv(mat, window, terget):
+class conv2D(filter):
+    def __init__(self, mat, window):
+        self.mat = mat
+        self.window = window
+        self.target = target
+        super().__init__(1 + 2 * window)
+    
+    def extend_mat(self):
+        exmat = self.mat.copy()
+
+    def moving_average(self, target):
+        
+
+
+
+    def moving_average(self, exmat)
+
+def conv(mat, mode, window, terget):
     retmat = mat.copy()
     exmat = mat.copy()
     X, Y = mat.shape[:-1]
@@ -14,7 +38,7 @@ def conv(mat, window, terget):
     exmat = np.concatenate((np.array([exmat[:, 0]] * window).transpose(1, 0, 2), exmat), axis=1)
     exmat = np.concatenate((exmat, np.array([exmat[:, -1]] * window).transpose(1, 0, 2)), axis=1)
 
-    filter = np.ones((fsize, fsize, 3), np.float) / ((fsize) ** 2)
+    filter = np.ones((fsize, fsize, 3), np.float) / fsize ** 2
     tmp_m = np.zeros_like(mat, np.float)
     
     for x, y in product(range(window, X + window), range(window, Y + window)):
