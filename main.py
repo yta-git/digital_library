@@ -3,12 +3,12 @@ from digital_library import *
 np.set_printoptions(100)
 
 if __name__ == '__main__':
-    RGB = loadimg('lenna.bmp')
-    # showimg(RGB)
+    RGB = loadimg('lennaN.bmp')
+    showimg(RGB)
     YCC = RGBtoYCC(RGB)
-    YCC = conv(YCC, 1, 'Y')
+    YCC = conv(YCC, 2, 'all')
     showimg(YCCtoRGB(YCC))
-
+        
     #YCC1 = conv(YCC, 1, 'Y')
 
     #showimg(YCC1)

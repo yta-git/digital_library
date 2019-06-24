@@ -3,21 +3,25 @@ from itertools import product
 from PIL import Image
 
 def conv(mat, window, terget):
-    retmat = exmat = mat.copy()
+    retmat = mat.copy()
+    exmat = mat.copy()
     X, Y = mat.shape[:-1]
-    print(f'using {1 + 2 * window} * {1 + 2 * window} filter')
+    fsize = 1 + 2 * window
+    print(f'using {fsize} * {fsize} filter')
 
     exmat = np.concatenate(([exmat[0]] * window, exmat), axis=0)
     exmat = np.concatenate((exmat, [exmat[-1]] * window), axis=0)
-    exmat = np.concatenate((np.array([exmat[:, 0]]).transpose(1,0,2), exmat), axis=1)
-    exmat = np.concatenate((exmat, np.array([exmat[:, -1]]).transpose(1,0,2)), axis=1)
+    exmat = np.concatenate((np.array([exmat[:, 0]] * window).transpose(1, 0, 2), exmat), axis=1)
+    exmat = np.concatenate((exmat, np.array([exmat[:, -1]] * window).transpose(1, 0, 2)), axis=1)
 
-    filter = np.ones((3, 3, 3), np.float) / 9
+    filter = np.ones((fsize, fsize, 3), np.float) / ((fsize) ** 2)
     tmp_m = np.zeros_like(mat, np.float)
+    
+    for x, y in product(range(window, X + window), range(window, Y + window)):
+        u, d, l, r = y - window, y + window + 1, x - window, x + window + 1
+        tmp_m[y - window, x - window] = sum(sum(filter * exmat[u:d, l:r]))
 
-    for x, y in product(range(window, X), range(window, Y)):
-        u, d, l, r = x - window, x + window + 1, y - window, y +  window + 1
-        tmp_m[x, y] = np.sum(filter[:, :] * exmat[u:d, l:r])
+    print(tmp_m)
 
     if 'all' in terget:
         return tmp_m
