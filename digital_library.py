@@ -2,32 +2,47 @@ import numpy as np
 from itertools import product
 from PIL import Image
 
-def conv(m, t):
-    m = m.copy()
-    tmp_m = np.zeros_like(m, np.float)
-    X, Y = m.shape[:-1]
-    for x, y in product(range(X), range(Y)):
-        sum = np.array([.0, .0, .0])
-        n = 0
-        for dx, dy in product(range(-1, 2), range(-1, 2)):
-            if 0 < x + dx < X and 0 < y + dy < Y:
-                sum += m[y + dy][x + dx]
-                n += 1
-        tmp_m[y][x] = sum / n
+def conv(mat, window, terget):
+    mat = mat.copy()
+    
+    mat = np.concatenate(([mat[0]] * window, mat), axis=0)
+    mat = np.concatenate((mat, [mat[-1]] * window, mat), axis=0)
+    mat = np.concatenate((np.array([mat[0]] * window).T, mat), axis=1)
+    
 
-    if 'all' in t:
+    tmp_m = np.zeros_like(mat, np.float)
+
+    
+    X, Y = mat.shape[:-1]
+
+    filter = np.ones((3, 3, 3), np.float) / 9
+
+    
+
+
+
+    for x, y in product(range(X), range(Y)):
+        u = max(0, x - window)
+        d = min(X, x + window + 1)
+        l = max(0, y - window)
+        r = min(Y, y +  window + 1)
+
+        tmp_m = sum(filter[:, :] * mat[u:d, l:r, :])
+
+    if 'all' in terget:
         return tmp_m
 
-    if 'Y' in t:
-        m[:, :, 0] = tmp_m[:, :, 0]
+    if 'Y' in terget:
+        mat[:, :, 0] = tmp_m[:, :, 0]
     
-    if 'Cb' in t:
-        m[:, :, 1] = tmp_m[:, :, 1]
+    if 'Cb' in terget:
+        mat[:, :, 1] = tmp_m[:, :, 1]
     
-    if 'Cr' in t:
-        m[:, :, 2] = tmp_m[:, :, 2]
+    if 'Cr' in terget:
+        mat[:, :, 2] = tmp_m[:, :, 2]
 
-    return m
+    return mat
+
 
 def RGBtoYCC(RGB):
     YCC = np.zeros_like(RGB, np.float)
