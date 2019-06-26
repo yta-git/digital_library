@@ -3,7 +3,7 @@ from itertools import product
 from PIL import Image
 
 class filter:
-    def __init__(self, fsize, sigma=1.3): 
+    def __init__(self, fsize, sigma=1): 
         if not fsize % 2:
             raise ValueError(f'fsize(={fsize}) should be odd value')
 
@@ -21,6 +21,7 @@ class filter:
         self.gaussian_filter = np.zeros((fsize, fsize, 3), np.float)
         for x, y in product(range(fsize), range(fsize)):
             self.gaussian_filter[y, x] = 1/2/np.pi/sigma**2 * np.exp(-(((x-fsize//2)**2 + (y-fsize//2)**2) / 2 / sigma**2))
+        self.gaussian_filter /= self.gaussian_filter.sum() / 3
 
 def extend(mat, grid):
     exmat = mat.copy()
