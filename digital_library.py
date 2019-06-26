@@ -7,7 +7,6 @@ class filter:
         if not fsize % 2:
             raise ValueError(f'fsize(={fsize}) should be odd value')
 
-        print(f'using {fsize} * {fsize} filter')
         self.moving_average_filter = np.ones((fsize, fsize, 3), np.float) / fsize ** 2
 
         self.high_pass_filter = np.zeros((fsize, fsize, 3), np.float)
@@ -32,6 +31,7 @@ def extend(mat, grid):
     return exmat
 
 def conv(mat, filter):
+    print(f'using {filter.shape[0]} * {filter.shape[1]} filter')
     X, Y = mat.shape[:-1]
     grid = (filter.shape[0] - 1) // 2
     exmat = extend(mat, grid)
@@ -44,6 +44,9 @@ def conv(mat, filter):
     return abs(retm)
 
 def median(mat, fsize):
+    if not fsize % 2:
+            raise ValueError(f'fsize(={fsize}) should be odd value')
+
     X, Y = mat.shape[:-1]
     grid = (fsize - 1) // 2
     exmat = extend(mat, grid)
