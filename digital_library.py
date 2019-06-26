@@ -41,7 +41,7 @@ def conv(mat, filter):
         u, d, l, r = y - grid, y + grid + 1, x - grid, x + grid + 1
         retm[y - grid, x - grid] = sum(sum(filter * exmat[u:d, l:r]))
 
-    return retm
+    return abs(retm)
 
 def median(mat, fsize):
     X, Y = mat.shape[:-1]
@@ -53,7 +53,7 @@ def median(mat, fsize):
         u, d, l, r = y - grid, y + grid + 1, x - grid, x + grid + 1
         retm[y - grid, x - grid] = np.median(np.median(exmat[u:d, l:r], axis=0), axis=0)
 
-    return retm
+    return abs(retm)
 
 def RGBtoYCC(RGB):
     YCC = np.zeros_like(RGB, np.float)

@@ -9,7 +9,7 @@ if __name__ == '__main__':
     r[:, :, (1, 2)] = 128
     r = YCCtoRGB(r)
 
-    r = abs(conv(r, filter.high_pass_filter))
+    r = conv(r, filter.high_pass_filter)
 
     #r = conv(r, filter.high_pass_filter)
 
