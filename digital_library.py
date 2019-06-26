@@ -15,9 +15,9 @@ class filter:
         self.high_pass_filter[:, -1] = 1
 
         self.laplacian_filter = np.zeros((fsize, fsize,3), np.float)
-        self.laplacian_filter[fsize // 2, :] = 1/4
-        self.laplacian_filter[:, fsize // 2] = 1/4
-        self.laplacian_filter[fsize // 2, fsize // 2] = -1
+        self.laplacian_filter[fsize // 2, :] = 1
+        self.laplacian_filter[:, fsize // 2] = 1
+        self.laplacian_filter[fsize // 2, fsize // 2] = -4
 
         self.gaussian_filter = np.zeros((fsize, fsize, 3), np.float)
         for x, y in product(range(fsize), range(fsize)):

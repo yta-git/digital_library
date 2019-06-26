@@ -1,15 +1,17 @@
 from digital_library import *
 
-np.set_printoptions(100)
-
 if __name__ == '__main__':
-    filter = filter(5)
-    RGB = loadimg('lennaN.bmp')
-    showimg(RGB)
-        
-    YCC = RGBtoYCC(RGB)
-    r = median(YCC, 3)
-    showimg(YCCtoRGB(r))
-    
-    #YCC = conv(RGBtoYCC(RGB), filter.gaussian_filter)
-    #showimg(YCCtoRGB(YCC))
+    filter = filter(3)
+    print(filter.high_pass_filter)
+    RGB = loadimg('lenna.bmp')
+    showimg(RGB)    
+    r = RGBtoYCC(RGB)
+    r[:, :, (1, 2)] = 128
+    r = YCCtoRGB(r)
+
+    r = abs(conv(r, filter.high_pass_filter))
+
+    #r = conv(r, filter.high_pass_filter)
+
+    showimg(r)
+
