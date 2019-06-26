@@ -1,9 +1,12 @@
 from digital_library import *
 
 if __name__ == '__main__':
-    f = filter(5)
+    f = filter(3)
     m = loadimg('lennaN.bmp')
     showimg(m)
-    m = conv(m, f.gaussian_filter)
+    
+    m = median(m, 3)
+    m = median(m, 3)
+    m = median(m, 3)
     showimg(m)
 

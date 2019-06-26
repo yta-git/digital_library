@@ -47,7 +47,7 @@ def conv(mat, filter):
 def median(mat, fsize):
     if not fsize % 2:
             raise ValueError(f'fsize(={fsize}) should be odd value')
-
+    print(f'using {fsize} * {fsize} filter')
     X, Y = mat.shape[:-1]
     grid = (fsize - 1) // 2
     exmat = extend(mat, grid)
