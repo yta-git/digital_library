@@ -84,3 +84,7 @@ def loadimg(path):
 
 def showimg(RGB):
     Image.fromarray(RGB.astype(np.uint8)).show()
+
+def saveimg(RGB, name):
+    with open(name, 'wb') as f:
+        Image.fromarray(RGB.astype(np.uint8)).save(f)
