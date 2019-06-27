@@ -88,3 +88,4 @@ def showimg(RGB):
 def saveimg(RGB, name):
     with open(name, 'wb') as f:
         Image.fromarray(RGB.astype(np.uint8)).save(f)
+        print(f'saved {name}')
